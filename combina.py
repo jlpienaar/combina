@@ -2,7 +2,9 @@
 """
 Created on Sat Nov  7 12:56:13 2020
 
-@author: Jacques.Pienaar
+@author: Jacques Pienaar 
+jaypienaar.com
+
 """
 import pandas as pd
 import numpy as np
@@ -13,20 +15,21 @@ import os
 # containing students' names and marks,
 # combine into a single table.
 # Assumptions:
-# notas includes columns for the first name, surname, ID_number, 
+# notas includes columns for the first name, surname, ID, 
 # and various marks columns.
-# provas includes columns for the full name, ID_number, 
+# provas includes columns for the full name, ID, 
 # and various marks columns.
 # Strategy: 
 # The goal is to create two tables that can be outer-joined on the basis
 # of a number UID that uniquely identifies as many students as possible
-# using their ID_number and name.
+# using their ID and name.
 # To do this, we need to identify as many unique people as possible across the
 # two lists, and give each unique person the same UID on each list.
 # Match people in two stages. Stage 1: match by ID.
 # Stage 2: match by name, with the user's help to resolve ambiguities.
 # Finally, outer-join the tables on the UIDs, and drop the UID column.
 
+# BUGS: Not associating Harry von whoami
 #%% FIND THE FILES TO COMBINE:
 
 os.chdir('C:\\Users\\jacques.pienaar\\Desktop\\Gabi notas\\combina')
@@ -42,7 +45,7 @@ provas = provas.dropna(axis=0,how='all')
 provas = provas.dropna(axis=1,how='all')
 
 provas.rename(columns={provas.columns[0]:'Nome', 
-                       provas.columns[1]:'ID_number'},
+                       provas.columns[1]:'ID'},
               inplace = True)
 
 provas.replace(['á','ã','é','ê','í','õ','ó','ô','ú','ç'],
@@ -56,7 +59,7 @@ notas = notas.dropna(axis=1,how='all')
 
 notas.rename(columns={notas.columns[0]:'First name', 
                       notas.columns[1]:'Surname',
-                      notas.columns[2]:'ID_number'},
+                      notas.columns[2]:'ID'},
              inplace = True)
 
 notas.replace(['á','ã','é','ê','í','õ','ó','ô','ú','ç'],
@@ -70,20 +73,20 @@ notas = notas[['Nome']+list(notas.columns[2:-1])]    # Can this be improved?
 
 #%% FIX DUPLICATES IN EACH LIST
     
-# Check that no ID_numbers are duplicated:
-notas_IDs = notas.dropna(subset=['ID_number'])
-provas_IDs = provas.dropna(subset=['ID_number'])
-assert len(notas_IDs['ID_number'].unique()) == len(notas_IDs)
-assert len(provas_IDs['ID_number'].unique()) == len(provas_IDs)
+# Check that no IDs are duplicated:
+notas_IDs = notas.dropna(subset=['ID'])
+provas_IDs = provas.dropna(subset=['ID'])
+assert len(notas_IDs['ID'].unique()) == len(notas_IDs)
+assert len(provas_IDs['ID'].unique()) == len(provas_IDs)
 
 
 # Make sure that if a name has duplicates in one of the lists, then
-# all instances of it in that list must be accompanied by ID_numbers.
+# all instances of it in that list must be accompanied by IDs.
 
 n_count = notas.Nome.value_counts()
 n_multi = n_count[n_count >1]
 for n in n_multi:
-    problem = len(notas[(notas.Nome == n)&(notas['ID_number'].isna())])
+    problem = len(notas[(notas.Nome == n)&(notas['ID'].isna())])
     if problem:
         sys.exit('Erro: o nome {} parece multiplus vezes no arquivo "notas". '
                  'Por favor '
@@ -93,24 +96,24 @@ for n in n_multi:
 p_count = provas.Nome.value_counts()
 p_multi = p_count[p_count >1]        
 for p in p_multi:
-    problem = len(provas[(provas.Nome == n)&(provas['ID_number'].isna())])
+    problem = len(provas[(provas.Nome == n)&(provas['ID'].isna())])
     if problem:
         sys.exit('Erro: o nome {} parece multiplus vezes no arquivo "provas". '
                  'Por favor '
                  'coloque números de identificação distintos para eles '
                  'e tente de novo.'.format(n))
 
-#%% ASSIGN UIDs BASED ON common ID_number
+#%% ASSIGN UIDs BASED ON common ID
 
-common_ID = pd.merge(notas_IDs, provas_IDs, how='inner', on='ID_number',
+common_ID = pd.merge(notas_IDs, provas_IDs, how='inner', on='ID',
                      suffixes=('_n','_p')) 
 
 UID = 0
 notas = notas.assign(UID = np.nan)
 provas = provas.assign(UID = np.nan)
-for i in common_ID.ID_number:
-    notas.UID[notas.ID_number == i] = UID
-    provas.UID[provas.ID_number == i] = UID
+for i in common_ID.ID:
+    notas.UID[notas.ID == i] = UID
+    provas.UID[provas.ID == i] = UID
     UID += 1
 #%% DEFINE NAME MATCHING FUNCTION:
 
@@ -141,14 +144,14 @@ def similar_names(a, b, threshold = 2):
 # Note: This could be much more elegant... why not keep the IDs separate?
 
 notas = notas.assign(nameid = notas.Nome)
-notas.ID_number = notas.ID_number.apply(str)
-notas.ID_number[notas.ID_number == 'nan'] = 'desconhecido'
-notas.nameid += ' (ID: ' + notas.ID_number + ')'
+notas.ID = notas.ID.apply(str)
+notas.ID[notas.ID == 'nan'] = 'desconhecido'
+notas.nameid += ' (ID: ' + notas.ID + ')'
 
 provas = provas.assign(nameid = provas.Nome)
-provas.ID_number = provas.ID_number.apply(str)
-provas.ID_number[provas.ID_number == 'nan'] = 'desconhecido'
-provas.nameid += ' (ID: ' + provas.ID_number + ')'
+provas.ID = provas.ID.apply(str)
+provas.ID[provas.ID == 'nan'] = 'desconhecido'
+provas.nameid += ' (ID: ' + provas.ID + ')'
 
 # Get name lists excluding those which already have a UID
 n_names = notas.nameid[notas.UID.isna()].to_list()
@@ -180,9 +183,11 @@ for n in n_multi:
             print('Por favor, insira um númer entre '
                   '1 e {}.'.format(len(matches)+1))
             ans = False
+    print('ans = {}, num_opts = {}'.format(ans,num_options))
     if ans == num_options:
         pairs = pairs[pairs.n != n]  # Drop all matches with that name.
     else:
+        print('else statement activated')
         p = matches[ans-1]
         pairs = pairs[((pairs.n != n) & (pairs.p != p))     # Drop all except
                       | ((pairs.n == n) & (pairs.p == p))]  # the correct pair.
@@ -207,9 +212,11 @@ for p in p_multi:
             print('Por favor, insira um númer entre '
                   '1 e {}.'.format(len(matches)+1))
             ans = False
+    print('ans = {}, num_opts = {}'.format(ans,num_options))
     if ans == num_options:
         pairs = pairs[pairs.p != p]  # Drop all matches with that name.
     else:
+        print('else statement activated')
         n = matches[ans-1]
         pairs = pairs[((pairs.n != n) & (pairs.p != p))     # Drop all except
                       | ((pairs.n == n) & (pairs.p == p))]  # the correct pair.
@@ -226,19 +233,62 @@ for p in p_multi:
 # 2 people with similar names, no IDs in notas or provas
                   
 
-#%% Finally, assign unique UIDs to the matches found.
-# POE: buggy code
+#%% Finally, assign unique UIDs to the matches found
         
 for n in pairs.n:
     for p in pairs.p[pairs.n == n]:
         notas.UID[notas.nameid == n] = UID
         provas.UID[provas.nameid == p] = UID
         UID += 1
+#%%
+# ...and give unique UIDs to the remaining students:
+        
+x = notas.UID[notas.UID.isna()]
+UIDs = [UID+i for i in range(len(x))]
+notas.UID[notas.UID.isna()] = UIDs
+UID += len(x)
+
+y = provas.UID[provas.UID.isna()]
+UIDs = [UID+i for i in range(len(y))]
+provas.UID[provas.UID.isna()] = UIDs
+UID += len(y)
 
 #%% COMBINE DATA: 
-    
-final = pd.merge(notas, provas, how='outer', on='UID')
 
+# Restore the IDs
+notas.ID[notas.ID == 'desconhecido'] = np.nan
+provas.ID[provas.ID == 'desconhecido'] = np.nan
+
+#%%
+# Fill in any missing ID numbers:
+
+u_ids = {}
+for u in range(UID):
+    ids = (notas.ID[notas.UID == u].dropna().tolist() + 
+           provas.ID[provas.UID == u].dropna().tolist() )
+    if ids:
+        u_ids[u] = ids[0] 
+    else:
+        u_ids[u] = np.nan
+
+for u in range(UID):
+    notas.ID[notas.UID == u] = u_ids[u]
+    provas.ID[provas.UID == u] = u_ids[u]
+
+#%% Make final merged table
+    
+# Drop unnecessary columns
+notas.drop(columns=['nameid'], inplace=True)
+provas.drop(columns=['nameid'], inplace=True)
+
+# Merge 
+final = pd.merge(notas, provas, 
+                 how='outer', on=['UID','ID'], suffixes=('_1','_2'))
+
+# Tidy up columns
+upfront_cols = ['Nome_1','Nome_2','ID']
+new_columns = upfront_cols + final.columns.drop(upfront_cols+['UID']).tolist()
+final = final[new_columns]
 
 #%% SAVE FILES
 final.to_csv(filepath + '\\combined.csv', na_rep = '#N/A')
