@@ -7,6 +7,11 @@ jaypienaar.com
 
 """
 
+import sys
+import os
+import pandas as pd
+import numpy as np
+
 def similar_names(a, b, threshold = 2):
     names1 = []
     names2 = []
@@ -27,19 +32,13 @@ def similar_names(a, b, threshold = 2):
     return names1, names2, multimatch1, multimatch2
 
 def main():
-
-    import pandas as pd
-    import numpy as np
-    import sys
-    import os
-
     # Get data from files:
     
     filepath = os.getcwd()
 
-    notas = pd.read_csv(filepath + '\\notas-t3-test.csv', encoding='latin-1')
+    notas = pd.read_csv(filepath + '\\notas.csv', encoding='latin-1')
 
-    provas = pd.read_csv(filepath + '\\provas-t3-test.csv', encoding='latin-1')
+    provas = pd.read_csv(filepath + '\\provas.csv', encoding='latin-1')
 
     # Tidy up the data:
 
