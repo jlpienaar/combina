@@ -1,4 +1,5 @@
 # combina
+A simple Python script to help TAs merge tables of student grades, using the students' names as keys.
 
 ## Português  (Scroll down for English version)
 `combina.py` é uma programa símples que pode fundir duas tabelas de notas. Se os números de identidade não são disponíveis, a programa pode identificar os estudantes usando os nomes deles. Os nomes não precisam ser iguais em cada tabela: o algoritmo pode adivinhar quais nomes correspondem à mesma pessoa. Se ele acha vários nomes similares, ele vai pedir para você o ajude.
