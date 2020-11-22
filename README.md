@@ -8,7 +8,7 @@ Escrevi essa programa para ajudar os assistentes no UFRJ. Eles usam uma platafor
 
 * Não todos os sobrenomes parecem em cada tabela, então pode ter um estudante com nomes que parecem differente, ou dois estudantes com nomes muitos parecidos;
 
-* De fato, há casos em que dois estudantes tem exatamente o mesmo nome nas listas (mesmo com todos os sobrenomes!) e só podem ser differenciados por número de ID.
+* De fato, há casos em que dois estudantes tem exatamente o mesmo nome nas listas (inclusive de todos os sobrenomes!) e só podem ser differenciados por número de ID.
 
 Isso é uma perda de tempo absurdo. O `combina.py` faz o maior parte do trabalho automaticamente, so pedindo ajuda nos casos de incerteza. Ele pode identificar os estudantes em 96% dos casos, e só vai precisar adjuda em 4% dos casos. Eu acredito que o possibilidade de fazer uma identificação errado é quase 0%; mesmo assim eu recommendo que você verificar os nomes na tabula final.
 
@@ -34,7 +34,7 @@ I wrote this code to help the teaching assistants at UFRJ. They use a system cal
 
 * Despite having multiple last names, many names are quite common, so it is not unusual to find two students with exactly the same names, eg. Gabriela Moreira da Silva Castro. 
 
-The teaching assistants are forced to merge two excel spreadsheets by hand, which means going through a list of over 100 students' names, finding the matching student from a similar list, and copy-pasting their data into a single table. This is a tragic and unnecessary waste of time. `combina.py` does most of the work automatically, asking for help only in cases where it is not sure how to match the students. Testing it on real student data, it correctly matched about 96% of the students and asked for help for the remaining 4%, meaning that it made zero errors.
+The teaching assistants are forced to merge two excel spreadsheets by hand, which means going through a list of over 100 students' names, finding the matching student from a similar list, and copy-pasting their data into a single table. This is a tragic and unnecessary waste of time. `combina.py` does most of the work automatically, asking for help only in cases where it is not sure how to match the students. Testing it on sample data, it correctly matched about 96% of the students and asked for help for the remaining 4%, meaning that it made zero errors.
 
 ### Usage
 
